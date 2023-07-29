@@ -6,7 +6,7 @@ import org.apache.http.HttpVersion;
 import org.apache.http.client.cache.HttpCacheEntry;
 import org.apache.http.message.BasicStatusLine;
 import org.apache.maven.plugin.logging.SystemStreamLog;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import wiremock.org.eclipse.jetty.http.HttpStatus;
 
 import java.net.URI;
@@ -22,25 +22,25 @@ import static org.hamcrest.core.Is.is;
 /**
  * Unit tests for {@linkplain FileBackedIndex}
  */
-public class FileBackedIndexTest {
+class FileBackedIndexTest {
 
     @Test
-    public void testAsUri() {
+    void testAsUri() {
         assertThat(FileBackedIndex.asUri("foo://test/file.bin"), is(URI.create("foo://test/file.bin")));
     }
 
     @Test
-    public void testUriWithPortAsUri() {
+    void testUriWithPortAsUri() {
         assertThat(FileBackedIndex.asUri("bar://test:8080/file.bin"), is(URI.create("bar://test/file.bin")));
     }
 
     @Test
-    public void testUriWithAuthInfoAsUri() {
+    void testUriWithAuthInfoAsUri() {
         assertThat(FileBackedIndex.asUri("test://bill@test:8080/file.bin"), is(URI.create("test://bill@test/file.bin")));
     }
 
     @Test
-    public void testUriWithAdditionalHeaderInfoUri() {
+    void testUriWithAdditionalHeaderInfoUri() {
         assertThat(FileBackedIndex.asUri("{Accept-Encoding=gzip%2Cdeflate}https://postman-echo.com:443/get"), is(URI.create("https://postman-echo.com/get")));
     }
 
@@ -49,7 +49,7 @@ public class FileBackedIndexTest {
      * remove the file from the index reverting to retrieving the remote resource.
      */
     @Test
-    public void testIndexedFileNotFound() throws Exception {
+    void testIndexedFileNotFound() throws Exception {
         class ClosablePath implements AutoCloseable {
             private final Path dir;
             public ClosablePath(Path dir) {

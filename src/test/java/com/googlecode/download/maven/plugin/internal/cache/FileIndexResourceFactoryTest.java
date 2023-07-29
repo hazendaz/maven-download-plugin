@@ -1,6 +1,6 @@
 package com.googlecode.download.maven.plugin.internal.cache;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 
@@ -11,14 +11,14 @@ import static org.hamcrest.Matchers.not;
 /**
  * Unit tests for {@linkplain FileIndexResourceFactory}
  */
-public class FileIndexResourceFactoryTest {
+class FileIndexResourceFactoryTest {
     /**
      * URI is a relative URI without protocol spec, so it doesn't contain the host name.
      * We will test if the method {@link FileIndexResourceFactory#generateUniqueCachePath(String)}
      * is able to generate a unique path for the root resource.
      */
     @Test
-    public void testGenerateUniqueCacheFileForEmptyResource()
+    void testGenerateUniqueCacheFileForEmptyResource()
     {
         assertThat(new FileIndexResourceFactory(Paths.get("/tmp"))
                 .generateUniqueCachePath("").toString(), not(containsString("_")));
@@ -30,7 +30,7 @@ public class FileIndexResourceFactoryTest {
      * is able to generate a unique path for the root resource.
      */
     @Test
-    public void testGenerateUniqueCacheFileForRootResource()
+    void testGenerateUniqueCacheFileForRootResource()
     {
         assertThat(new FileIndexResourceFactory(Paths.get("/tmp"))
                 .generateUniqueCachePath("/").toString(), not(containsString("_")));
@@ -42,7 +42,7 @@ public class FileIndexResourceFactoryTest {
      * is able to generate a unique path for a resource containing a file name.
      */
     @Test
-    public void testGenerateUniqueCacheFileForNonRootResource()
+    void testGenerateUniqueCacheFileForNonRootResource()
     {
         assertThat(new FileIndexResourceFactory(Paths.get("/tmp"))
                         .generateUniqueCachePath("/someFileName").toString(),

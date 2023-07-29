@@ -1,16 +1,13 @@
 package com.googlecode.download.maven.plugin.internal;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.http.auth.AUTH;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.net.URI;
@@ -19,34 +16,35 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
+
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 
 /**
  * Unit tests for {@link HttpFileRequester}
  *
  * @author Andrzej Jarmoniuk
  */
-public class HttpFileRequesterTest {
-    @Rule
-    public TemporaryFolder outputDirectory = new TemporaryFolder();
-    @Rule
-    public WireMockRule wireMock = new WireMockRule(options().dynamicPort());
+@WireMockTest
+class HttpFileRequesterTest {
+    @TempDir
+    File outputDirectory;
     private File outputFile;
     private final static Log LOG = new SystemStreamLog();
     private final static String OUTPUT_FILE_NAME = "output-file";
 
-    @Before
-    public void setUp() throws Exception {
-        this.outputFile = new File(this.outputDirectory.getRoot(), OUTPUT_FILE_NAME);
+    @BeforeEach
+    void setUp() throws Exception {
+        this.outputFile = new File(this.outputDirectory, OUTPUT_FILE_NAME);
     }
 
-    private HttpFileRequester.Builder createFileRequesterBuilder() throws Exception {
+    private HttpFileRequester.Builder createFileRequesterBuilder(WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
         class MavenSessionStub extends MavenSession {
             @SuppressWarnings("deprecation")
             MavenSessionStub() {
@@ -58,7 +56,7 @@ public class HttpFileRequesterTest {
                 .withProgressReport(new LoggingProgressReport(LOG))
                 .withConnectTimeout(3000)
                 .withSocketTimeout(3000)
-                .withUri(new URI(this.wireMock.baseUrl()))
+                .withUri(new URI(wmRuntimeInfo.getHttpBaseUrl()))
                 .withRedirectsEnabled(false)
                 .withPreemptiveAuth(false)
                 .withCacheDir(null)
@@ -71,12 +69,12 @@ public class HttpFileRequesterTest {
      * @throws Exception thrown if {@link HttpFileRequester} creation fails
      */
     @Test
-    public void testNoAuth()
+    void testNoAuth(WireMockRuntimeInfo wmRuntimeInfo)
             throws Exception {
-        this.wireMock.stubFor(get(anyUrl())
+        stubFor(get(anyUrl())
                 .willReturn(ok().withBody("Hello, world!")));
 
-        createFileRequesterBuilder()
+        createFileRequesterBuilder(wmRuntimeInfo)
                 .build()
                 .download(this.outputFile, emptyList());
 
@@ -89,16 +87,16 @@ public class HttpFileRequesterTest {
      * @throws Exception thrown if {@link HttpFileRequester} creation fails
      */
     @Test
-    public void testBasicAuth()
+    void testBasicAuth(WireMockRuntimeInfo wmRuntimeInfo)
             throws Exception {
-        this.wireMock.stubFor(get(anyUrl())
+        stubFor(get(anyUrl())
                 .willReturn(unauthorized()
                         .withHeader(AUTH.WWW_AUTH,"Basic")));
-        this.wireMock.stubFor(get(anyUrl())
+        stubFor(get(anyUrl())
                 .withBasicAuth("billg", "hunter2")
                 .willReturn(ok().withBody("Hello, world!")));
 
-        createFileRequesterBuilder()
+        createFileRequesterBuilder(wmRuntimeInfo)
                 .withUsername("billg")
                 .withPassword("hunter2")
                 .build()
@@ -113,13 +111,13 @@ public class HttpFileRequesterTest {
      * @throws Exception thrown if {@link HttpFileRequester} creation fails
      */
     @Test
-    public void testBasicAuthPreempt()
+    void testBasicAuthPreempt(WireMockRuntimeInfo wmRuntimeInfo)
             throws Exception {
-        wireMock.stubFor(get(anyUrl())
+        stubFor(get(anyUrl())
                 .withBasicAuth("billg", "hunter2")
                 .willReturn(ok().withBody("Hello, world!")));
 
-        createFileRequesterBuilder()
+        createFileRequesterBuilder(wmRuntimeInfo)
                 .withUsername("billg")
                 .withPassword("hunter2")
                 .withPreemptiveAuth(true)
@@ -135,12 +133,12 @@ public class HttpFileRequesterTest {
      * if the download fails
      */
     @Test
-    public void testDownloadFailure() {
-        this.wireMock.stubFor(get(anyUrl())
+    void testDownloadFailure(WireMockRuntimeInfo wmRuntimeInfo) {
+        stubFor(get(anyUrl())
                 .willReturn(forbidden()));
 
         try {
-            createFileRequesterBuilder()
+            createFileRequesterBuilder(wmRuntimeInfo)
                     .build()
                     .download(this.outputFile, emptyList());
             fail("A DownloadFailureException should have been thrown");

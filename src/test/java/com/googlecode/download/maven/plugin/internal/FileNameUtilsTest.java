@@ -1,6 +1,6 @@
 package com.googlecode.download.maven.plugin.internal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
@@ -10,13 +10,13 @@ import static org.hamcrest.Matchers.is;
 /**
  * Unit test suite for the {@link FileNameUtils} class
  */
-public class FileNameUtilsTest {
+class FileNameUtilsTest {
 
     /**
      * Shall return the host name if the resource is empty.
      */
     @Test
-    public void testGetOutputFileNameForEmptyResource() {
+    void testGetOutputFileNameForEmptyResource() {
         assertThat(FileNameUtils.getOutputFileName(URI.create("https://www.dummy.com")), is("www.dummy.com"));
     }
 
@@ -24,7 +24,7 @@ public class FileNameUtilsTest {
      * Shall return the host name if the resource is just the root resource.
      */
     @Test
-    public void testGetOutputFileNameForRootResource() {
+    void testGetOutputFileNameForRootResource() {
         assertThat(FileNameUtils.getOutputFileName(URI.create("https://www.dummy.com/")), is("www.dummy.com"));
     }
 
@@ -32,7 +32,7 @@ public class FileNameUtilsTest {
      * Shall return the resource name if the resource not the root resource
      */
     @Test
-    public void testGetOutputFileNameForNonRootResource() {
+    void testGetOutputFileNameForNonRootResource() {
         assertThat(FileNameUtils.getOutputFileName(URI.create("https://www.dummy.com/resource")), is("resource"));
     }
 }
