@@ -7,6 +7,8 @@ package com.googlecode.download.maven.plugin.internal.cache;
  * (including Java serialization changes, or even moving to a different serialization mechanism (JSON, XML, etc.).
  */
 class IncompatibleIndexException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
     IncompatibleIndexException(Exception cause) {
         super(cause);
     }

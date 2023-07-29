@@ -1,10 +1,9 @@
 package com.googlecode.download.maven.plugin.internal.cache;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpVersion;
-import org.apache.http.client.cache.HttpCacheEntry;
-import org.apache.http.message.BasicStatusLine;
+import org.apache.hc.client5.http.cache.HttpCacheEntry;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpVersion;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.junit.jupiter.api.Test;
 import wiremock.org.eclipse.jetty.http.HttpStatus;
@@ -13,6 +12,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -66,7 +66,7 @@ class FileBackedIndexTest {
         try (AutoCloseable ignored = new ClosablePath(path)){
             FileBackedIndex index = new FileBackedIndex(path, new SystemStreamLog());
             index.putEntry("foo://file.bin",
-                    new HttpCacheEntry(new Date(), new Date(),
+                    new HttpCacheEntry(Instant.now(), Instant.now(),
                             new BasicStatusLine(HttpVersion.HTTP_1_1,
                                     HttpStatus.OK_200, "OK"), new Header[]{},
                             new FileIndexResource(Paths.get("bogus"), path)));

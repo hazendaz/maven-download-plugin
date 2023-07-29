@@ -15,8 +15,9 @@
 package com.googlecode.download.maven.plugin.internal;
 
 import com.googlecode.download.maven.plugin.internal.checksum.Checksums;
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
+
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;

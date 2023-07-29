@@ -1,18 +1,16 @@
 package com.googlecode.download.maven.plugin.internal.cache;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.http.annotation.Contract;
-import org.apache.http.annotation.ThreadingBehavior;
-import org.apache.http.client.cache.InputLimit;
-import org.apache.http.client.cache.Resource;
-import org.apache.http.client.cache.ResourceFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+
+import org.apache.hc.client5.http.cache.Resource;
+import org.apache.hc.client5.http.cache.ResourceFactory;
+import org.apache.hc.client5.http.cache.ResourceIOException;
+import org.apache.hc.core5.annotation.Contract;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -56,7 +54,7 @@ public class FileIndexResourceFactory implements ResourceFactory {
     @Override
     public Resource copy(
             final String requestId,
-            final Resource resource) throws IOException {
+            final Resource resource) throws ResourceIOException {
         final Path dst = generateUniqueCachePath(requestId);
 
         if (resource instanceof FileIndexResource) {
@@ -69,6 +67,18 @@ public class FileIndexResourceFactory implements ResourceFactory {
             }
         }
         return new FileIndexResource(dst, cacheDir);
+    }
+
+    @Override
+    public Resource generate(String requestId, byte[] content) throws ResourceIOException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Resource generate(String requestId, byte[] content, int off, int len) throws ResourceIOException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

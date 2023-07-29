@@ -214,6 +214,8 @@ public class ArtifactMojo extends AbstractMojo {
                                                     .thenAccept(result::addAll)
                                                 .get();
                                     } catch (InterruptedException | ExecutionException e) {
+                                        // Restore interrupted state...
+                                        Thread.currentThread().interrupt();
                                         throw new RuntimeException(e);
                                     }
                                 });

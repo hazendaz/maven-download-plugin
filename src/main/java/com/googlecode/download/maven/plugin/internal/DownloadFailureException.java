@@ -6,6 +6,8 @@ package com.googlecode.download.maven.plugin.internal;
  */
 public final class DownloadFailureException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     private final int statusCode;
 
     private final String statusLine;

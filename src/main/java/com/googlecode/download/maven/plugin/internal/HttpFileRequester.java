@@ -17,28 +17,27 @@ package com.googlecode.download.maven.plugin.internal;
 
 import com.googlecode.download.maven.plugin.internal.cache.FileBackedIndex;
 import com.googlecode.download.maven.plugin.internal.cache.FileIndexResourceFactory;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.NTCredentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.cache.HttpCacheContext;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.routing.HttpRoutePlanner;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.cache.CacheConfig;
-import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
-import org.apache.http.impl.client.cache.CachingHttpClients;
-import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
+
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.CredentialsProvider;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.cache.HttpCacheContext;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.auth.BasicScheme;
+import org.apache.hc.client5.http.impl.cache.CacheConfig;
+import org.apache.hc.client5.http.impl.cache.CachingHttpClientBuilder;
+import org.apache.hc.client5.http.impl.cache.CachingHttpClients;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
+import org.apache.hc.client5.http.impl.routing.SystemDefaultRoutePlanner;
+import org.apache.hc.client5.http.routing.HttpRoutePlanner;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.util.TimeValue;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -53,6 +52,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Objects.requireNonNull;
@@ -62,7 +62,7 @@ import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
  * File requester that can download resources over HTTP transport using Apache HttpClient 4.x.
  */
 public class HttpFileRequester {
-    public static final int HEURISTIC_DEFAULT_LIFETIME = 364 * 3600 * 24;
+    public static final TimeValue HEURISTIC_DEFAULT_LIFETIME = TimeValue.of(365, TimeUnit.DAYS);
 
     private ProgressReport progressReport;
     private int connectTimeout;
@@ -216,7 +216,7 @@ public class HttpFileRequester {
                 }
                 instance.credentialsProvider.setCredentials(
                         new AuthScope(this.uri.getHost(), this.uri.getPort()),
-                        new UsernamePasswordCredentials(server.getUsername(), server.getPassword()));
+                        new UsernamePasswordCredentials(server.getUsername(), server.getPassword().toCharArray()));
             } else if (isNotBlank(this.username)) {
                 if (this.log.isDebugEnabled()) {
                     this.log.debug("providing custom authentication");
@@ -224,7 +224,7 @@ public class HttpFileRequester {
                 }
                 instance.credentialsProvider.setCredentials(
                         new AuthScope(this.uri.getHost(), this.uri.getPort()),
-                        new UsernamePasswordCredentials(this.username, this.password));
+                        new UsernamePasswordCredentials(this.username, this.password.toCharArray()));
             }
 
             if (isNotBlank(this.proxyHost)) {
@@ -237,7 +237,7 @@ public class HttpFileRequester {
                             isNotBlank(this.proxyNtlmHost) && isNotBlank(this.proxyNtlmDomain)
                                 ? new NTCredentials(this.proxyUserName, this.proxyPassword, this.proxyNtlmHost,
                                     this.proxyNtlmDomain)
-                                : new UsernamePasswordCredentials(this.proxyUserName, this.proxyPassword));
+                                : new UsernamePasswordCredentials(this.proxyUserName, this.proxyPassword.toCharArray()));
                 }
             } else {
                 instance.routePlanner = new SystemDefaultRoutePlanner(ProxySelector.getDefault());
@@ -327,7 +327,7 @@ public class HttpFileRequester {
 
     private CachingHttpClientBuilder createHttpClientBuilder() throws NotDirectoryException {
         final RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(connectTimeout)
+                .setConnectionRequestTimeout(connectTimeout, TimeUnit.MILLISECONDS)
                 .setSocketTimeout(socketTimeout)
                 .setRedirectsEnabled(redirectsEnabled)
                 .build();

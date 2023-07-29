@@ -1,17 +1,15 @@
 package com.googlecode.download.maven.plugin.internal.cache;
 
-import org.apache.http.Header;
-import org.apache.http.HttpHeaders;
-import org.apache.http.StatusLine;
-import org.apache.http.client.cache.HeaderConstants;
-import org.apache.http.client.cache.HttpCacheEntry;
-import org.apache.http.client.cache.HttpCacheStorage;
-import org.apache.http.client.cache.HttpCacheUpdateCallback;
-import org.apache.http.client.utils.DateUtils;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicStatusLine;
-import org.apache.http.util.Args;
+import org.apache.hc.client5.http.cache.HttpCacheCASOperation;
+import org.apache.hc.client5.http.cache.HttpCacheEntry;
+import org.apache.hc.client5.http.cache.HttpCacheStorage;
+import org.apache.hc.client5.http.cache.HttpCacheUpdateException;
+import org.apache.hc.client5.http.cache.Resource;
+import org.apache.hc.client5.http.cache.ResourceIOException;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.net.URIBuilder;
+import org.apache.hc.core5.util.Args;
 import org.apache.maven.plugin.logging.Log;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -22,6 +20,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.*;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +30,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpVersion.HTTP_1_1;
 
 /**
  * Persistent cache implementation of the {@link HttpCacheStorage} interface,
@@ -54,13 +51,13 @@ public final class FileBackedIndex implements HttpCacheStorage {
     private final Path baseDir;
 
     private static HttpCacheEntry asHttpCacheEntry( Path path, Path cacheDir) {
-        Date lastModifiedDate;
+        Instant lastModifiedDate;
         try {
-            lastModifiedDate = Date.from(Files.getLastModifiedTime(path, LinkOption.NOFOLLOW_LINKS).toInstant());
+            lastModifiedDate = Files.getLastModifiedTime(path, LinkOption.NOFOLLOW_LINKS).toInstant();
         } catch (IOException e) {
-            lastModifiedDate = Date.from(Instant.now());
+            lastModifiedDate = Instant.now();
         }
-        return new HttpCacheEntry(lastModifiedDate, Date.from(Instant.now()), OK_STATUS_LINE,
+        return new HttpCacheEntry(lastModifiedDate, Instant.now(), HttpStatus.SC_OK,
                 new Header[] { new BasicHeader(HttpHeaders.DATE, DateUtils.formatDate(lastModifiedDate)),
                 new BasicHeader(HeaderConstants.CACHE_CONTROL_MAX_AGE, String.valueOf(Integer.MAX_VALUE)),
                 new BasicHeader(HeaderConstants.EXPIRES,
@@ -112,7 +109,7 @@ public final class FileBackedIndex implements HttpCacheStorage {
     }
 
     @Override
-    public void putEntry(String key, HttpCacheEntry entry) throws IOException {
+    public void putEntry(String key, HttpCacheEntry entry) {
         URI uri = asUri(key);
         if (uri != null) {
             log.debug("Putting \"" + uri + "\" into cache");
@@ -201,7 +198,14 @@ public final class FileBackedIndex implements HttpCacheStorage {
     }
 
     @Override
-    public void updateEntry(String key, HttpCacheUpdateCallback callback) {
-        // do nothing
+    public void updateEntry(String key, HttpCacheCASOperation casOperation)
+            throws ResourceIOException, HttpCacheUpdateException {
+        // Do Nothing
+    }
+
+    @Override
+    public Map<String, HttpCacheEntry> getEntries(Collection<String> keys) throws ResourceIOException {
+        // Do Nothing
+        return null;
     }
 }

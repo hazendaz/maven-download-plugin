@@ -1,14 +1,13 @@
 package com.googlecode.download.maven.plugin.internal;
 
-import org.apache.http.*;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestExecutor;
+import org.apache.hc.client5.http.HttpRoute;
+import org.apache.hc.client5.http.impl.cache.CachingHttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
+import org.apache.hc.core5.http.io.HttpClientConnection;
+import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.util.TimeValue;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -135,7 +134,7 @@ class WGetMojoTest {
         CachingHttpClientBuilder clientBuilder = CachingHttpClientBuilder.create();
         clientBuilder.setConnectionManager(new BasicHttpClientConnectionManager() {
             @Override
-            public void connect(HttpClientConnection conn, HttpRoute route, int connectTimeout, HttpContext context) {
+            public void connect(HttpClientConnection conn, HttpRoute route, TimeValue connectTimeout, HttpContext context) {
             }
         });
         clientBuilder.setRequestExecutor(new HttpRequestExecutor() {

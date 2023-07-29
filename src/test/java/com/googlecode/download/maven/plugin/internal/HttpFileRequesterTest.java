@@ -1,6 +1,5 @@
 package com.googlecode.download.maven.plugin.internal;
 
-import org.apache.http.auth.AUTH;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.logging.Log;

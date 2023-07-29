@@ -16,13 +16,11 @@
 package com.googlecode.download.maven.plugin.internal;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import org.apache.commons.codec.binary.Hex;
+import org.apache.hc.client5.http.utils.Hex;
 import org.apache.maven.plugin.MojoFailureException;
 
 /**
@@ -50,6 +48,6 @@ public class ChecksumUtils {
         } while (numRead != -1);
         fis.close();
         byte[] actualDigest = digest.digest();
-        return new String(Hex.encodeHex(actualDigest));
+        return Hex.encodeHexString(actualDigest);
     }
 }
